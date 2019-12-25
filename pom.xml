@@ -13,7 +13,7 @@
 		<commons-beanutils.version>1.9.3</commons-beanutils.version>
 		<commons-io.version>2.5</commons-io.version>
 		<commons-codec.version>1.10</commons-codec.version>
-		<commons-fileupload.version>1.3.2</commons-fileupload.version>
+		<commons-fileupload.version>1.3.3</commons-fileupload.version>
 		<commons-logging.version>1.2</commons-logging.version>
 		<guava.version>21.0</guava.version>
 		<HikariCP.version>2.6.1</HikariCP.version>
