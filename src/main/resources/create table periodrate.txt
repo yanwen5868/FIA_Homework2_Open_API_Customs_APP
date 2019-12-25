@@ -1,0 +1,8 @@
+create table PeriodRate(
+currency varchar(6),
+year int,
+month int,
+period int,
+buyPrice float,
+sellPrice float
+)
