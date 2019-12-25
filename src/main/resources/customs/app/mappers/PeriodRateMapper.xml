@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="customs.app.dao.PeriodRateDao">
+
+	<resultMap type="PeriodRate" id="PeriodRateResult">
+		<id property="year" column="year" />
+		<result property="month" column="month" />
+		<result property="period" column="period" />
+		<result property="buyPrice" column="buyPrice" />
+		<result property="sellPrice" column="sellPrice" />
+	</resultMap>
+	
+	<sql id="selector">
+		select * from PeriodRate
+	</sql>
+
+	
+	<select id="getByCurrencyAndPeriod" parameterType="Map" resultMap="PeriodRateResult">
+		<include refid="selector"/>  
+        <where>
+            <if test="currency != null">
+                and currency = #{currency}
+            </if>
+            <if test="year != null">
+                and year = #{year}
+            </if>
+            <if test="month != null">
+                and month = #{month}
+            </if>
+            <if test="period != null">
+                and period = #{period}
+            </if>
+        </where>
+	</select>
+	
+	<select id="countAll"  resultType="int">
+        select count(*) from PeriodRate
+    </select>
+    
+    <select id="listAll" resultMap="PeriodRateResult">
+        <include refid="selector"/>
+    </select>
+	
+	<select id="countByCondition" parameterType="Map" resultType="int">
+        select count(*) from PeriodRate
+        <where>
+            <if test="currency != null">
+                and currency = #{currency}
+            </if>
+            <if test="year != null">
+                and year = #{year}
+            </if>
+            <if test="month != null">
+                and month = #{month}
+            </if>
+            <if test="period != null">
+                and period = #{period}
+            </if>
+        </where>
+    </select>
+
+    <select id="listByCondition" parameterType="Map" resultMap="PeriodRateResult">
+        <include refid="selector"/>
+        <where>
+            <if test="currency != null">
+                and currency = #{currency}
+            </if>
+            <if test="year != null">
+                and year = #{year}
+            </if>
+            <if test="month != null">
+                and month = #{month}
+            </if>
+            <if test="period != null">
+                and period = #{period}
+            </if>
+        </where>
+<!--         <if test="limit != null"> -->
+<!--             limit #{offset}, #{limit} -->
+<!--         </if> -->
+    </select>
+	
+	<insert id="create" parameterType="PeriodRate">
+		insert into
+		PeriodRate(currency,year,month,period,buyPrice,sellPrice)
+		values(#{currency}, #{year}, #{month}, #{period},
+		  #{buyPrice}, #{sellPrice})
+	</insert>
+
+	<update id="update" parameterType="PeriodRate">
+		update PeriodRate
+		<set>
+			<if test="buyPrice != null">
+	            buyPrice = #{buyPrice},
+	        </if>
+	        <if test="sellPrice != null">
+	            sellPrice = #{sellPrice},
+	        </if>
+
+		</set>
+        <where>
+            <if test="currency != null">
+                and currency = #{currency}
+            </if>
+            <if test="year != null">
+                and year = #{year}
+            </if>
+            <if test="month != null">
+                and month = #{month}
+            </if>
+            <if test="period != null">
+                and period = #{period}
+            </if>
+        </where>
+	</update>
+
+</mapper> 
