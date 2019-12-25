@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:batch="http://www.springframework.org/schema/batch"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/batch
+        http://www.springframework.org/schema/batch/spring-batch.xsd
+        ">
+                  
+   <!-- stored job-meta in database -->
+   <bean id="jobRepository" class="org.springframework.batch.core.repository.support.JobRepositoryFactoryBean">
+      <property name="dataSource" ref="dataSource" />
+      <property name="transactionManager" ref="transactionManager" />
+      <property name="databaseType" value="mysql" />
+   </bean>
+   <bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+      <property name="jobRepository" ref="jobRepository" />
+   </bean>
+   <bean id="jobExplorer"
+        class="org.springframework.batch.core.explore.support.JobExplorerFactoryBean">
+        <property name="dataSource" ref="dataSource" />    
+   </bean>
+   <bean id="jobRegistry" 
+        class="org.springframework.batch.core.configuration.support.MapJobRegistry" /> 
+   <bean id="jobOperator" 
+       class="org.springframework.batch.core.launch.support.SimpleJobOperator">
+       <property name="jobRepository" ref="jobRepository" />
+       <property name="jobLauncher" ref="jobLauncher" />      
+       <property name="jobRegistry" ref="jobRegistry" />
+       <property name="jobExplorer" ref="jobExplorer" />
+   </bean>
+   
+   <bean id="periodRateProcessor" class="customs.app.batch.PeriodRateProcessor" scope="step" />
+   
+   <bean id="cvsFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+      <property name="resource" value="classpath:BGMOPEN99.csv" />
+      <property name="lineMapper">
+         <bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+            <property name="lineTokenizer">
+               <bean class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+                  <property name="names" value="currency,year,month,period,buyPrice,sellPrice" />
+               </bean>
+            </property>
+            <property name="fieldSetMapper">
+               <bean class="customs.app.batch.PeriodRateFieldSetMapper" />               
+            </property>
+         </bean>
+      </property>
+      <property name="encoding" value="UTF-8" />
+      <property name="linesToSkip" value="2" />
+   </bean>
+   
+   <bean id="mybatisItemWriter" class="org.mybatis.spring.batch.MyBatisBatchItemWriter" scope="step">
+      <property name="sqlSessionFactory" ref="sqlSessionFactory" />
+      <property name="statementId" value="customs.app.dao.PeriodRateDao.create" />  
+   </bean>
+   
+   <bean id="periodRateListener" class="customs.app.batch.PeriodRateListener">
+      <property name="dataSource" ref="dataSource" />  
+   </bean>
+   
+   <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+      <property name="corePoolSize" value="5" />
+      <property name="maxPoolSize" value="15" />   
+   </bean>
+   
+   <batch:job id="periodRateJob">
+      <batch:step id="step1">
+         <batch:tasklet task-executor="taskExecutor" throttle-limit="6">
+            <batch:chunk reader="cvsFileItemReader" writer="mybatisItemWriter" processor="periodRateProcessor" commit-interval="1000" />
+         </batch:tasklet>
+         <batch:listeners>
+            <batch:listener ref="periodRateListener"></batch:listener>
+         </batch:listeners>
+      </batch:step>
+   </batch:job>
+  
+</beans>
